@@ -1,0 +1,95 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Copy_blob_(V2)": {
+                "inputs": {
+                    "headers": {
+                        "ReadFileMetadataFromServer": true
+                    },
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['azureblob']['connectionId']"
+                        }
+                    },
+                    "method": "post",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('AccountNameFromSettings'))}/copyFile",
+                    "queries": {
+                        "destination": "copies/@{triggerBody()?['DisplayName']}",
+                        "overwrite": false,
+                        "queryParametersSingleEncoded": true,
+                        "source": "encrypted/@{triggerBody()?['DisplayName']}"
+                    }
+                },
+                "runAfter": {},
+                "type": "ApiConnection"
+            },
+            "Trigger": {
+                "inputs": {
+                    "body": "@triggerBody()",
+                    "function": {
+                        "id": "/subscriptions/31938b27-efd0-4eb4-9842-f9da8c6bd5ce/resourceGroups/ResGroup1/providers/Microsoft.Web/sites/HttpCallFunction/functions/Trigger"
+                    },
+                    "method": "GET"
+                },
+                "runAfter": {
+                    "Copy_blob_(V2)": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Function"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "defaultValue": {},
+                "type": "Object"
+            }
+        },
+        "triggers": {
+            "When_a_blob_is_added_or_modified_(properties_only)_(V2)": {
+                "evaluatedRecurrence": {
+                    "frequency": "Hour",
+                    "interval": 6
+                },
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['azureblob']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('bhavystorage'))}/triggers/batch/onupdatedfile",
+                    "queries": {
+                        "checkBothCreatedAndModifiedDateTime": false,
+                        "folderId": "JTJmZW5jcnlwdGVk",
+                        "maxFileCount": 2
+                    }
+                },
+                "metadata": {
+                    "JTJmZW5jcnlwdGVk": "/encrypted",
+                    "JTJmdXBsb2Fk": "/upload"
+                },
+                "recurrence": {
+                    "frequency": "Hour",
+                    "interval": 6
+                },
+                "splitOn": "@triggerBody()",
+                "type": "ApiConnection"
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "value": {
+                "azureblob": {
+                    "connectionId": "/subscriptions/31938b27-efd0-4eb4-9842-f9da8c6bd5ce/resourceGroups/ResGroup1/providers/Microsoft.Web/connections/azureblob-6",
+                    "connectionName": "azureblob-6",
+                    "id": "/subscriptions/31938b27-efd0-4eb4-9842-f9da8c6bd5ce/providers/Microsoft.Web/locations/eastus/managedApis/azureblob"
+                }
+            }
+        }
+    }
+}
